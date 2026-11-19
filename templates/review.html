@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block content %}
+<h4 class="mb-3">Review Submissions</h4>
+<ul class="nav nav-pills mb-3">
+  <li class="nav-item"><a class="nav-link {% if status == 'pending' %}active{% endif %}" href="?status=pending">Pending</a></li>
+  <li class="nav-item"><a class="nav-link {% if status == 'approved' %}active{% endif %}" href="?status=approved">Approved</a></li>
+  <li class="nav-item"><a class="nav-link {% if status == 'rejected' %}active{% endif %}" href="?status=rejected">Rejected</a></li>
+</ul>
+
+<div class="card shadow-sm"><div class="table-responsive">
+  <table class="table align-middle m-0">
+    <thead class="table-light"><tr><th>Faculty</th><th>Type</th><th>Title</th><th>Year</th><th>Proof</th><th style="min-width:260px">Decision</th></tr></thead>
+    <tbody>
+    {% for r in records %}
+      <tr>
+        <td>{{ r.faculty.get_full_name|default:r.faculty.username }}<div class="small text-muted">{{ r.faculty.profile.department }}</div></td>
+        <td>{{ r.get_record_type_display }}</td>
+        <td>{{ r.title }}<div class="small text-muted">{{ r.details }}</div></td>
+        <td>{{ r.year }}</td>
+        <td>{% if r.proof %}<a href="{{ r.proof.url }}" target="_blank">View</a>{% endif %}</td>
+        <td>
+          <form method="post">{% csrf_token %}
+            <input class="form-control form-control-sm mb-1" name="remarks" placeholder="Remarks (optional)" value="{{ r.remarks }}">
+            <button class="btn btn-sm btn-success" formaction="{% url 'decide' r.pk 'approved' %}">Approve</button>
+            <button class="btn btn-sm btn-danger" formaction="{% url 'decide' r.pk 'rejected' %}">Reject</button>
+          </form>
+        </td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="6" class="text-center text-muted py-4">Nothing here.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div></div>
+{% endblock %}

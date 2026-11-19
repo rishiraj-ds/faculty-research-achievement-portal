@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h4 class="m-0">My Research &amp; Achievements</h4>
+  <a class="btn btn-primary" href="{% url 'add_record' %}">+ Add record</a>
+</div>
+
+<div class="row g-3 mb-4 text-center">
+  <div class="col-6 col-md-3"><div class="card"><div class="card-body"><div class="fs-3">{{ stats.total }}</div>Total</div></div></div>
+  <div class="col-6 col-md-3"><div class="card border-success"><div class="card-body"><div class="fs-3 text-success">{{ stats.approved }}</div>Approved</div></div></div>
+  <div class="col-6 col-md-3"><div class="card border-warning"><div class="card-body"><div class="fs-3 text-warning">{{ stats.pending }}</div>Pending</div></div></div>
+  <div class="col-6 col-md-3"><div class="card border-danger"><div class="card-body"><div class="fs-3 text-danger">{{ stats.rejected }}</div>Rejected</div></div></div>
+</div>
+
+<form method="get" class="row g-2 mb-3">
+  <div class="col-auto"><input class="form-control" type="number" name="year" placeholder="Year" value="{{ year }}"></div>
+  <div class="col-auto">
+    <select class="form-select" name="type">
+      <option value="">All types</option>
+      {% for value, label in types %}<option value="{{ value }}" {% if value == rtype %}selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="col-auto"><button class="btn btn-secondary">Filter</button> <a class="btn btn-link" href="{% url 'dashboard' %}">Reset</a></div>
+</form>
+
+<div class="card shadow-sm"><div class="table-responsive">
+  <table class="table table-hover align-middle m-0">
+    <thead class="table-light"><tr><th>Type</th><th>Title</th><th>Year</th><th>Status</th><th>HOD remarks</th><th>Proof</th><th></th></tr></thead>
+    <tbody>
+    {% for r in records %}
+      <tr>
+        <td>{{ r.get_record_type_display }}</td>
+        <td>{{ r.title }}<div class="small text-muted">{{ r.details }}</div></td>
+        <td>{{ r.year }}</td>
+        <td><span class="badge bg-{% if r.status == 'approved' %}success{% elif r.status == 'rejected' %}danger{% else %}warning text-dark{% endif %}">{{ r.get_status_display }}</span></td>
+        <td>{{ r.remarks }}</td>
+        <td>{% if r.proof %}<a href="{{ r.proof.url }}" target="_blank">View</a>{% endif %}</td>
+        <td class="text-nowrap">
+          <a class="btn btn-sm btn-outline-primary" href="{% url 'edit_record' r.pk %}">Edit</a>
+          <form method="post" action="{% url 'delete_record' r.pk %}" class="d-inline" onsubmit="return confirm('Delete this record?');">{% csrf_token %}
+            <button class="btn btn-sm btn-outline-danger">Delete</button>
+          </form>
+        </td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="7" class="text-center text-muted py-4">No records yet. Click "Add record" to start.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div></div>
+{% endblock %}
